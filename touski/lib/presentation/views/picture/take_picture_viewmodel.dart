@@ -46,7 +46,7 @@ class TakePictureViewModel extends BaseViewModel{
     _navigationService.navigateTo(Routes.recipeView);
   }
   void retakePicture(){
-    this._image = null;
+    _image = null;
     notifyListeners();
   }
 }

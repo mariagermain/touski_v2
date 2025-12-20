@@ -2,7 +2,6 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:stacked_services/stacked_services.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:touski/domain/services/tflite_service.dart';
 import 'package:touski/presentation/app/app.router.dart';
 import 'package:touski/presentation/app/app_setup.dart';
 
