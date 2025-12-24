@@ -1,8 +1,11 @@
+import 'dart:typed_data';
+
+import 'package:image/image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:stacked/stacked.dart';
 import 'package:stacked_services/stacked_services.dart';
 import 'package:touski/domain/entities/analysis_result.dart';
-import 'package:touski/domain/services/tflite_service.dart';
+import 'package:touski/domain/usecases/analyse_image_usecase.dart';
 import 'package:touski/presentation/app/app.router.dart';
 import 'package:touski/presentation/app/app_setup.dart';
 import 'dart:io';
@@ -10,13 +13,16 @@ import 'package:image/image.dart' as img;
 
 class TakePictureViewModel extends BaseViewModel{
   final _navigationService = locator<NavigationService>();
-  final _tfliteService = locator<TfliteService>();
+  final _analyseImageUsecase = locator<AnalyseImageUsecase>();
 
   final ImagePicker _picker = ImagePicker();
 
   bool pictureTaken = false;
-  File? _image;
-  File? get image => _image;
+  Uint8List? _imageBytes;
+  List<String>? _detectedFoods;
+
+  List<String>? get detectedFoods => _detectedFoods;
+  Uint8List? get image => _imageBytes;
 
   Future<void> importPicture() async {
     final XFile? picked = await _picker.pickImage(
@@ -26,27 +32,50 @@ class TakePictureViewModel extends BaseViewModel{
 
     if (picked == null) return;
 
-    _image = File(picked.path);
+    _imageBytes = await picked.readAsBytes();
+    await analysePicture();
     notifyListeners();
   }
 
-  void setTakenPicture(String path) {
-    _image = File(path);
-    analysePicture();
+  Future<void> setTakenPicture(String imagePath) async {
+    final file = XFile(imagePath);
+    _imageBytes = await file.readAsBytes();
+    await analysePicture();
     notifyListeners();
   }
-  void analysePicture() async {
-    AnalysisResult result = await _tfliteService.analyzeImage(_image!);
 
-    final annotatedBytes = img.encodePng(result.annotatedImage);
+Future<void> analysePicture() async {
+  if (_imageBytes == null) return;
 
-    await _image!.writeAsBytes(annotatedBytes);
-  }
+  final AnalysisResult result =
+      await _analyseImageUsecase.execute(_imageBytes!);
+
+  _detectedFoods = result.detectedFoods;
+  _imageBytes = result.imageBytes;
+
+  notifyListeners();
+}
+
   void navigateToRecipeView(){
     _navigationService.navigateTo(Routes.recipeView);
   }
   void retakePicture(){
-    _image = null;
+    _imageBytes = null;
     notifyListeners();
   }
+  /*Float32List toFloat32List(Image image){
+    const inputSize = 640;
+
+    Float32List input = Float32List(inputSize * inputSize * 3);
+    int index = 0;
+    for (int y = 0; y < inputSize; y++) {
+      for (int x = 0; x < inputSize; x++) {
+        final pixel = image.getPixel(x, y);
+        input[index++] = pixel.r / 255.0;
+        input[index++] = pixel.g / 255.0;
+        input[index++] = pixel.b / 255.0;
+      }
+    }
+    return input;
+  }*/
 }

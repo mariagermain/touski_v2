@@ -1,14 +1,16 @@
-import 'package:image/image.dart' as img;
+import 'dart:typed_data';
+
+import 'package:image/image.dart';
 
 class AnalysisResult {
-  final img.Image annotatedImage;
+  final Uint8List imageBytes;
   final List<String> detectedFoods;
 
   AnalysisResult({
-    required this.annotatedImage,
+    required this.imageBytes,
     required this.detectedFoods,
   });
 
-  img.Image get _annotatedImage => annotatedImage;
+  Uint8List get _annotatedBytes => imageBytes;
   List<String> get _detectedFoods => detectedFoods;
 }

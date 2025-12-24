@@ -3,61 +3,103 @@ import 'dart:typed_data';
 import 'package:image/image.dart' as img;
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:touski/domain/entities/analysis_result.dart';
+import 'package:touski/domain/entities/class_names.dart';
 
 class TfliteService {
-  late Interpreter _interpreter;
+  final Interpreter interpreter;
 
-  Future<void> loadModel() async {
-    _interpreter = await Interpreter.fromAsset('models/foods_model.tflite');
+  TfliteService({required this.interpreter});
+
+Future<AnalysisResult> analyzeImage(Uint8List bytes) async {
+  final img.Image? image = img.decodeImage(bytes);
+
+  const inputSize = 640;
+  final resized = img.copyResize(image!, width: 640, height: 640);
+
+  Float32List input = Float32List(640 * 640 * 3);
+  int idx = 0;
+
+  for (int y = 0; y < 640; y++) {
+    for (int x = 0; x < 640; x++) {
+      final p = resized.getPixel(x, y);
+      input[idx++] = p.r / 255.0;
+      input[idx++] = p.g / 255.0;
+      input[idx++] = p.b / 255.0;
+    }
   }
 
-  Future<AnalysisResult> analyzeImage(File imageFile) async {
-    final imageBytes = await imageFile.readAsBytes();
-    img.Image image = img.decodeImage(imageBytes)!;
+  var output = List.filled(1 * 40 * 8400, 0.0).reshape([1, 40, 8400]);
+  interpreter.run(input.reshape([1, 640, 640, 3]), output);
 
-    const inputSize = 300;
-    img.Image resized = img.copyResize(image, width: inputSize, height: inputSize);
+  const double confidenceThreshold = 0.5;
+  const int numPredictions = 8400;
+  const int numClasses = 35;
 
-    Float32List input = Float32List(inputSize * inputSize * 3);
-    int index = 0;
-    for (int y = 0; y < inputSize; y++) {
-        for (int x = 0; x < inputSize; x++) {
-          final pixel = resized.getPixel(x, y); 
-          input[index++] = pixel.r / 255.0; 
-          input[index++] = pixel.g / 255.0; 
-          input[index++] = pixel.b / 255.0;
-        }
+  final Set<String> detectedFoods = {};
+  for (int i = 0; i < numPredictions; i++) {
+    final double objectness = output[0][4][i];
+    if (objectness < confidenceThreshold) continue;
+
+    // Find best class
+    double bestClassScore = 0.0;
+    int bestClassIndex = -1;
+
+    for (int c = 0; c < numClasses; c++) {
+      final double score = output[0][4 + c][i];
+      if (score > bestClassScore) {
+        bestClassScore = score;
+        bestClassIndex = c;
+      }
     }
 
-    var outputLocations = List.filled(1 * 10 * 4, 0.0).reshape([1, 10, 4]); 
-    var outputClasses = List.filled(1 * 10, 0.0).reshape([1, 10]);          
-    var outputScores = List.filled(1 * 10, 0.0).reshape([1, 10]);           
-    var numDetections = List.filled(1, 0.0).reshape([1]);                   
+    final double confidence = objectness * bestClassScore;
+    if(confidence < confidenceThreshold) continue;
+    final double cx = output[0][0][i];
+    final double cy = output[0][1][i];
+    final double w = output[0][2][i];
+    final double h = output[0][3][i];
 
-    _interpreter.run(input.reshape([1, inputSize, inputSize, 3]), {
-      0: outputLocations,
-      1: outputClasses,
-      2: outputScores,
-      3: numDetections,
-    });
+    final int left =
+        ((cx - w / 2) * inputSize).clamp(0, inputSize - 1).toInt();
+    final int top =
+        ((cy - h / 2) * inputSize).clamp(0, inputSize - 1).toInt();
+    final int right =
+        ((cx + w / 2) * inputSize).clamp(0, inputSize - 1).toInt();
+    final int bottom =
+        ((cy + h / 2) * inputSize).clamp(0, inputSize - 1).toInt();
 
+    img.drawRect(
+      resized,
+      x1: left,
+      y1: top,
+      x2: right,
+      y2: bottom,
+      color: img.ColorRgb8(255, 0, 0),
+      thickness: 3,
+    );
 
-    final List<String> detectedFoods = [];
-    for (int i = 0; i < numDetections[0].toInt(); i++) {
-      double score = outputScores[0][i];
-      if (score < 0.5) continue; 
+    final String label =
+        '${classNames[bestClassIndex]} ${(confidence * 100).toStringAsFixed(1)}%';
 
-      int classIndex = outputClasses[0][i].toInt();
-      detectedFoods.add('Food #$classIndex'); 
+    img.drawString(
+      resized,
+      font: img.arial14,
+      x: left,
+      y: (top - 16).clamp(0, inputSize - 1),
+      label,
+      color: img.ColorRgb8(255, 0, 0),
+    );
 
-      double yMin = outputLocations[0][i][0] * image.height;
-      double xMin = outputLocations[0][i][1] * image.width;
-      double yMax = outputLocations[0][i][2] * image.height;
-      double xMax = outputLocations[0][i][3] * image.width;
+    detectedFoods.add(classNames[bestClassIndex]);
+  }
 
-      img.drawRect(image, x1: xMin.toInt(), y1: yMin.toInt(), x2: xMax.toInt(), y2: yMax.toInt(), color: img.ColorRgb8(255, 0, 0));
-    }
+  final Uint8List annotatedBytes = Uint8List.fromList(img.encodePng(resized));
 
-    return AnalysisResult(annotatedImage: image, detectedFoods: detectedFoods);
+  return AnalysisResult(
+    imageBytes: annotatedBytes,
+    detectedFoods: detectedFoods.toList(),
+  );
   }
 }
+
+
