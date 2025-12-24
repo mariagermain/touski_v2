@@ -1,0 +1,23 @@
+{
+    "app": {
+      "title": "Touski"
+    }, 
+    "home": {
+        "welcome_message": "Page d'ouverture de l'application...",
+        "start_button": "Commencer"
+    },
+    "title_web_page": {
+        "picture": "Prendre une photo",
+        "recipe": "Recette"
+    },
+    "picture":{
+      "import_button": "Importer"
+    },
+    "message_failure": {
+      "announcement": "Une erreur est survenue",
+      "othercase": "Une erreur innattendue est survenue. Veuillez réessayer plus tard ou contacter quelqu'un si le problème survient une énième fois.",
+      "http_response": "Erreur de connexion, veuillez réessayer plus tard.",
+      "network": "Réseau indisponible. Vérifiez votre connexion internet.",
+      "repository": "Une erreur inattendue est survenue lors de la requête à l'API dans le Repository."
+    }
+}
