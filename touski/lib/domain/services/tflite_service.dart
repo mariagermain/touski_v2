@@ -1,105 +1,82 @@
-import 'dart:io';
-import 'dart:typed_data';
+import 'dart:math';
 import 'package:image/image.dart' as img;
 import 'package:tflite_flutter/tflite_flutter.dart';
-import 'package:touski/domain/entities/analysis_result.dart';
-import 'package:touski/domain/entities/class_names.dart';
+import 'package:tflite_flutter_processing/tflite_flutter_processing.dart';
+import 'package:touski/domain/entities/detection.dart';
+import 'package:touski/domain/entities/food_classes.dart';
 
 class TfliteService {
-  final Interpreter interpreter;
+  final String modelName = 'assets/models/food_model.tflite';
 
-  TfliteService({required this.interpreter});
+  late Interpreter interpreter;
+  late InterpreterOptions interpreterOptions;
 
-Future<AnalysisResult> analyzeImage(Uint8List bytes) async {
-  final img.Image? image = img.decodeImage(bytes);
+  late List<int> _inputShape;
+  late TensorImage _inputImage;
+  late TensorType _inputType;
 
-  const inputSize = 640;
-  final resized = img.copyResize(image!, width: 640, height: 640);
+  final preProcessNormalizeOp = NormalizeOp(127.5, 127.5);
 
-  Float32List input = Float32List(640 * 640 * 3);
-  int idx = 0;
-
-  for (int y = 0; y < 640; y++) {
-    for (int x = 0; x < 640; x++) {
-      final p = resized.getPixel(x, y);
-      input[idx++] = p.r / 255.0;
-      input[idx++] = p.g / 255.0;
-      input[idx++] = p.b / 255.0;
-    }
+  TfliteService() {
+    interpreterOptions = InterpreterOptions();
+    interpreterOptions.threads = 1;
   }
 
-  var output = List.filled(1 * 40 * 8400, 0.0).reshape([1, 40, 8400]);
-  interpreter.run(input.reshape([1, 640, 640, 3]), output);
+  Future<void> loadModel() async {
+    interpreter = await Interpreter.fromAsset(modelName, options: interpreterOptions);
 
-  const double confidenceThreshold = 0.5;
-  const int numPredictions = 8400;
-  const int numClasses = 35;
+    _inputShape = interpreter.getInputTensor(0).shape;
+    _inputType = interpreter.getInputTensor(0).type;
 
-  final Set<String> detectedFoods = {};
-  for (int i = 0; i < numPredictions; i++) {
-    final double objectness = output[0][4][i];
-    if (objectness < confidenceThreshold) continue;
-
-    // Find best class
-    double bestClassScore = 0.0;
-    int bestClassIndex = -1;
-
-    for (int c = 0; c < numClasses; c++) {
-      final double score = output[0][4 + c][i];
-      if (score > bestClassScore) {
-        bestClassScore = score;
-        bestClassIndex = c;
-      }
-    }
-
-    final double confidence = objectness * bestClassScore;
-    if(confidence < confidenceThreshold) continue;
-    final double cx = output[0][0][i];
-    final double cy = output[0][1][i];
-    final double w = output[0][2][i];
-    final double h = output[0][3][i];
-
-    final int left =
-        ((cx - w / 2) * inputSize).clamp(0, inputSize - 1).toInt();
-    final int top =
-        ((cy - h / 2) * inputSize).clamp(0, inputSize - 1).toInt();
-    final int right =
-        ((cx + w / 2) * inputSize).clamp(0, inputSize - 1).toInt();
-    final int bottom =
-        ((cy + h / 2) * inputSize).clamp(0, inputSize - 1).toInt();
-
-    img.drawRect(
-      resized,
-      x1: left,
-      y1: top,
-      x2: right,
-      y2: bottom,
-      color: img.ColorRgb8(255, 0, 0),
-      thickness: 3,
-    );
-
-    final String label =
-        '${classNames[bestClassIndex]} ${(confidence * 100).toStringAsFixed(1)}%';
-
-    img.drawString(
-      resized,
-      font: img.arial14,
-      x: left,
-      y: (top - 16).clamp(0, inputSize - 1),
-      label,
-      color: img.ColorRgb8(255, 0, 0),
-    );
-
-    detectedFoods.add(classNames[bestClassIndex]);
+    _inputImage = TensorImage(_inputType);
   }
 
-  final Uint8List annotatedBytes = Uint8List.fromList(img.encodePng(resized));
+  TensorImage _preProcess(img.Image image) {
+    int cropSize = min(image.height, image.width);
+    return ImageProcessorBuilder()
+        .add(ResizeWithCropOrPadOp(cropSize, cropSize))
+        .add(ResizeOp(_inputShape[1], _inputShape[2], ResizeMethod.NEAREST_NEIGHBOUR))
+        .add(preProcessNormalizeOp)
+        .build()
+        .process(_inputImage..loadImage(image));
+  }
 
-  return AnalysisResult(
-    imageBytes: annotatedBytes,
-    detectedFoods: detectedFoods.toList(),
-  );
+  List<Detection> processImage(img.Image image, {double threshold = 0.5}) {
+    _inputImage = _preProcess(image);
+
+    final outputLocations = TensorBufferFloat([1, 10, 4]);
+    final outputClasses = TensorBufferFloat([1, 10]);
+    final outputScores = TensorBufferFloat([1, 10]);
+    final numDetections = TensorBufferFloat([1]);
+
+    interpreter.runForMultipleInputs(
+      [_inputImage.buffer],
+      {
+        0: outputLocations.buffer,
+        1: outputClasses.buffer,
+        2: outputScores.buffer,
+        3: numDetections.buffer,
+      },
+    );
+
+    List<Detection> detections = [];
+    final count = numDetections.getIntValue(0);
+
+    for (int i = 0; i < count; i++) {
+      final score = outputScores.getDoubleValue(i);
+      if (score < threshold) continue;
+
+      final classIndex = outputClasses.getIntValue(i);
+      final boxStart = i * 4;
+      final box = outputLocations.getDoubleList().sublist(boxStart, boxStart + 4);
+
+      detections.add(Detection(foodClasses[classIndex], score, box));
+    }
+
+    return detections;
+  }
+
+  void close() {
+    interpreter.close();
   }
 }
-
-

@@ -80,7 +80,7 @@ class _TakePictureViewState extends State<TakePictureView> {
                           GestureDetector(
                             onTap: () async {
                               final image = await _controller.takePicture();
-                              viewModel.setTakenPicture(image.path);
+                              viewModel.setTakenPicture(image);
                             },
                             child: Container(
                               width: 72,

@@ -19,8 +19,7 @@ class AppSetup {
     locator.registerLazySingleton(() => DialogService());
     locator.registerLazySingleton(() => http.Client()); 
     locator.registerLazySingleton(() => FlutterSecureStorage());
-    final interpreter = await Interpreter.fromAsset('assets/models/food_model.tflite');
-    locator.registerLazySingleton(() => TfliteService(interpreter: interpreter));
+    locator.registerLazySingleton(() => TfliteService());
 
     /*locator.registerLazySingleton<RecipeRepository>(
       () => RecipeRepository(httpClient: locator<http.Client>()));
