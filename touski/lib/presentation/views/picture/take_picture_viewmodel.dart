@@ -5,6 +5,7 @@ import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:stacked/stacked.dart';
 import 'package:stacked_services/stacked_services.dart';
+import 'package:touski/domain/entities/analysis_result.dart';
 import 'package:touski/domain/entities/detection.dart';
 import 'package:touski/domain/usecases/analyse_image_usecase.dart';
 import 'package:touski/presentation/app/app.router.dart';
@@ -18,9 +19,9 @@ class TakePictureViewModel extends BaseViewModel{
 
   bool pictureTaken = false;
   Image? _image;
-  Set<String>? _detectedFoods;
+  List<String>? _detectedFoods;
 
-  Set<String>? get detectedFoods => _detectedFoods;
+  List<String>? get detectedFoods => _detectedFoods;
   Uint8List? get image => _image != null ? Uint8List.fromList(img.encodeJpg(_image!)) : null;
   
   Future<void> importPicture() async {
@@ -35,7 +36,7 @@ class TakePictureViewModel extends BaseViewModel{
     _image = img.decodeImage(bytes);
   
 
-    await analysePicture();
+    await processImage();
     notifyListeners();
   }
 
@@ -43,25 +44,24 @@ class TakePictureViewModel extends BaseViewModel{
     final bytes = await imageFile.readAsBytes();
     _image = img.decodeImage(bytes);
 
-    await analysePicture();
+    await processImage();
     notifyListeners();
   }
 
-Future<void> analysePicture() async {
-  if (_image == null) return;
+  Future<void> processImage() async {
+    if (_image == null) return;
 
-  final List<Detection> result = await _analyseImageUsecase.execute(_image!);
+    final AnalysisResult result = await _analyseImageUsecase.execute(_image!);
+    _image = result.image;
+    _detectedFoods = result.detectedFoods;
 
-  for(Detection r in result){
-    _detectedFoods?.add(r.foodClass.name);
+    notifyListeners();
   }
-
-  notifyListeners();
-}
 
   void navigateToRecipeView(){
     _navigationService.navigateTo(Routes.recipeView);
   }
+  
   void retakePicture(){
     _image = null;
     notifyListeners();

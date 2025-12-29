@@ -19,12 +19,12 @@ class AppSetup {
     locator.registerLazySingleton(() => DialogService());
     locator.registerLazySingleton(() => http.Client()); 
     locator.registerLazySingleton(() => FlutterSecureStorage());
-    locator.registerLazySingleton(() => TfliteService());
-
-    /*locator.registerLazySingleton<RecipeRepository>(
-      () => RecipeRepository(httpClient: locator<http.Client>()));
-    locator.registerLazySingleton<SecureStorageRepository>(
-      () => SecureStorageRepository(secureStorage: locator<FlutterSecureStorage>()));*/
+    
+    locator.registerSingletonAsync<TfliteService>(() async {
+      final service = TfliteService();
+      await service.loadModel();
+      return service;
+    });
   }
 
   static void _registerUseCases() {

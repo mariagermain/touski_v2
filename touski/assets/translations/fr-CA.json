@@ -13,6 +13,23 @@
     "picture":{
       "import_button": "Importer"
     },
+    "foods":{
+      "apple": "pomme",
+      "banana": "banane",
+      "bellpepper": "poivron",
+      "carrot": "carotte",
+      "corn": "maïs",
+      "cucumber": "concombre",
+      "eggplant": "aubergine",
+      "grapes": "raisins",
+      "kiwi": "kiwi",
+      "lemon": "citron",
+      "orange": "orange",
+      "pear": "poire",
+      "pineapple": "ananas",
+      "potato": "patate",
+      "tomato": "tomate"
+    },
     "message_failure": {
       "announcement": "Une erreur est survenue",
       "othercase": "Une erreur innattendue est survenue. Veuillez réessayer plus tard ou contacter quelqu'un si le problème survient une énième fois.",

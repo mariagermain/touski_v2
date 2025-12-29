@@ -1,82 +1,64 @@
-import 'dart:math';
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:image/image.dart' as img;
+import 'package:image/image.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
-import 'package:tflite_flutter_processing/tflite_flutter_processing.dart';
 import 'package:touski/domain/entities/detection.dart';
 import 'package:touski/domain/entities/food_classes.dart';
 
 class TfliteService {
-  final String modelName = 'assets/models/food_model.tflite';
-
   late Interpreter interpreter;
-  late InterpreterOptions interpreterOptions;
 
-  late List<int> _inputShape;
-  late TensorImage _inputImage;
-  late TensorType _inputType;
-
-  final preProcessNormalizeOp = NormalizeOp(127.5, 127.5);
-
-  TfliteService() {
-    interpreterOptions = InterpreterOptions();
-    interpreterOptions.threads = 1;
-  }
+  TfliteService();
 
   Future<void> loadModel() async {
-    interpreter = await Interpreter.fromAsset(modelName, options: interpreterOptions);
-
-    _inputShape = interpreter.getInputTensor(0).shape;
-    _inputType = interpreter.getInputTensor(0).type;
-
-    _inputImage = TensorImage(_inputType);
+    interpreter = await Interpreter.fromAsset('assets/models/food_model.tflite');
   }
 
-  TensorImage _preProcess(img.Image image) {
-    int cropSize = min(image.height, image.width);
-    return ImageProcessorBuilder()
-        .add(ResizeWithCropOrPadOp(cropSize, cropSize))
-        .add(ResizeOp(_inputShape[1], _inputShape[2], ResizeMethod.NEAREST_NEIGHBOUR))
-        .add(preProcessNormalizeOp)
-        .build()
-        .process(_inputImage..loadImage(image));
-  }
+  Future<List<Detection>> processImage(Image image, int inputSize) async {
+    const int maxDetections = 300;
+    const double confidenceThreshold = 0.4;
 
-  List<Detection> processImage(img.Image image, {double threshold = 0.5}) {
-    _inputImage = _preProcess(image);
+    final Float32List input = Float32List(inputSize * inputSize * 3);
+    int idx = 0;
 
-    final outputLocations = TensorBufferFloat([1, 10, 4]);
-    final outputClasses = TensorBufferFloat([1, 10]);
-    final outputScores = TensorBufferFloat([1, 10]);
-    final numDetections = TensorBufferFloat([1]);
-
-    interpreter.runForMultipleInputs(
-      [_inputImage.buffer],
-      {
-        0: outputLocations.buffer,
-        1: outputClasses.buffer,
-        2: outputScores.buffer,
-        3: numDetections.buffer,
-      },
-    );
-
-    List<Detection> detections = [];
-    final count = numDetections.getIntValue(0);
-
-    for (int i = 0; i < count; i++) {
-      final score = outputScores.getDoubleValue(i);
-      if (score < threshold) continue;
-
-      final classIndex = outputClasses.getIntValue(i);
-      final boxStart = i * 4;
-      final box = outputLocations.getDoubleList().sublist(boxStart, boxStart + 4);
-
-      detections.add(Detection(foodClasses[classIndex], score, box));
+    for (int y = 0; y < inputSize; y++) {
+      for (int x = 0; x < inputSize; x++) {
+        final p = image.getPixel(x, y);
+        input[idx++] = p.r / 255.0;
+        input[idx++] = p.g / 255.0;
+        input[idx++] = p.b / 255.0;
+      }
     }
 
+    final output = List.filled(1 * maxDetections * 6, 0.0).reshape([1, maxDetections, 6]);
+
+    interpreter.run(input.reshape([1, inputSize, inputSize, 3]), output,);
+
+    final List<Detection> detections = [];
+
+    for (int i = 0; i < maxDetections; i++) {
+      final double score = output[0][i][4];
+      if (score < confidenceThreshold) continue;
+
+      final int classIndex = output[0][i][5].toInt();
+
+      final cx = output[0][i][0];
+      final cy = output[0][i][1];
+      final bw = output[0][i][2];
+      final bh = output[0][i][3];
+
+      final box = Box(x: cx, y: cy, w: bw, h: bh);
+
+      detections.add(
+        Detection(
+          foodClass: foodClasses[classIndex],
+          score: score,
+          box: box,
+        ),
+      );
+    }
     return detections;
   }
-
-  void close() {
-    interpreter.close();
-  }
 }
+
