@@ -9,7 +9,6 @@ class Detection {
   Detection({required this.foodClass, required this.score, required this.box});
 
   Color get color => foodClass.color;
-  Box get _box => box;
 }
 
 class Box {

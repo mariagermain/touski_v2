@@ -2,7 +2,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import "package:stacked_services/stacked_services.dart";
-import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:touski/domain/services/tflite_service.dart';
 import 'package:touski/domain/usecases/analyse_image_usecase.dart';
 
@@ -19,7 +18,7 @@ class AppSetup {
     locator.registerLazySingleton(() => DialogService());
     locator.registerLazySingleton(() => http.Client()); 
     locator.registerLazySingleton(() => FlutterSecureStorage());
-    
+
     locator.registerSingletonAsync<TfliteService>(() async {
       final service = TfliteService();
       await service.loadModel();

@@ -30,8 +30,6 @@ class _TakePictureViewState extends State<TakePictureView> {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
     return ViewModelBuilder<TakePictureViewModel>.reactive(
       viewModelBuilder: () => TakePictureViewModel(),
       disposeViewModel: false,

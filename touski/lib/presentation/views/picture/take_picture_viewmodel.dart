@@ -6,7 +6,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:stacked/stacked.dart';
 import 'package:stacked_services/stacked_services.dart';
 import 'package:touski/domain/entities/analysis_result.dart';
-import 'package:touski/domain/entities/detection.dart';
 import 'package:touski/domain/usecases/analyse_image_usecase.dart';
 import 'package:touski/presentation/app/app.router.dart';
 import 'package:touski/presentation/app/app_setup.dart';
@@ -61,7 +60,7 @@ class TakePictureViewModel extends BaseViewModel{
   void navigateToRecipeView(){
     _navigationService.navigateTo(Routes.recipeView);
   }
-  
+
   void retakePicture(){
     _image = null;
     notifyListeners();
