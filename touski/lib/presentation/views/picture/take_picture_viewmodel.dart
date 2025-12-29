@@ -14,9 +14,8 @@ class TakePictureViewModel extends BaseViewModel{
   final _navigationService = locator<NavigationService>();
   final _analyseImageUsecase = locator<AnalyseImageUsecase>();
 
-  final ImagePicker _picker = ImagePicker();
+  final _picker = ImagePicker();
 
-  bool pictureTaken = false;
   Image? _image;
   List<String>? _detectedFoods;
 
@@ -33,7 +32,6 @@ class TakePictureViewModel extends BaseViewModel{
 
     final bytes = await picked.readAsBytes();
     _image = img.decodeImage(bytes);
-  
 
     await processImage();
     notifyListeners();

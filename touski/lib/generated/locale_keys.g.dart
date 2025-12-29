@@ -2,7 +2,11 @@
 
 abstract class  LocaleKeys {
   static const app_title = 'app.title';
+
   static const home_start_button = 'home.start_button';
+  static const home_supported_foods = 'home.supported_foods';
+  static const home_app_desc_1 = "home.app_desc_1";
+  static const home_app_desc_2 = "home.app_desc_2";
 
   static const picture_title = 'title_web_page.picture';
   static const picture_import_button = 'picture.import_button';

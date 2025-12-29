@@ -4,7 +4,10 @@
     }, 
     "home": {
         "welcome_message": "Page d'ouverture de l'application...",
-        "start_button": "Commencer"
+        "start_button": "Commencer",
+        "supported_foods": "Aliments supportés",
+        "app_desc_1": "Application mobile de détection d’aliments à partir d’une photo.",
+        "app_desc_2": "Prenez une photo de vos ingrédients et obtenez des suggestions de recettes adaptées à ce que vous avez sous la main."
     },
     "title_web_page": {
         "picture": "Prendre une photo",

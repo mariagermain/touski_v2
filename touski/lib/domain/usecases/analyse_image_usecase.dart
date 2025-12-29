@@ -19,11 +19,11 @@ class AnalyseImageUsecase {
 
     final Set<String> detectedFoods = {};
 
-    for(Detection d in detections) {
-      final x1 = ((d.box.x) * inputSize).toInt();
-      final y1 = ((d.box.y) * inputSize).toInt();
-      final x2 = ((d.box.x + d.box.w* inputSize)).toInt();
-      final y2 = ((d.box.y + d.box.h* inputSize)).toInt();
+    for (Detection d in detections) {
+      final x1 = (d.box.x * inputSize).toInt();
+      final y1 = (d.box.y * inputSize).toInt();
+      final x2 = ((d.box.x + d.box.w) * inputSize).toInt();
+      final y2 = ((d.box.y + d.box.h) * inputSize).toInt();
 
       img.drawRect(
         resized,
@@ -35,13 +35,36 @@ class AnalyseImageUsecase {
         thickness: 4,
       );
 
+      final label =
+          '${d.foodClass.name} ${(d.score * 100).toStringAsFixed(1)}%';
+
+      const padding = 4;
+      const charWidth = 8; 
+      const textHeight = 14;
+
+      final textWidth = label.length * charWidth;
+
+      final bgX1 = x1;
+      final bgY1 = (y1 - textHeight - padding * 2).clamp(0, resized.height);
+      final bgX2 = x1 + textWidth + padding * 2;
+      final bgY2 = y1;
+
+      img.fillRect(
+        resized,
+        x1: bgX1,
+        y1: bgY1,
+        x2: bgX2,
+        y2: bgY2,
+        color: d.color,
+      );
+
       img.drawString(
         resized,
         font: img.arial14,
-        x: x1,
-        y: (y1 + 16),
-        '${d.foodClass.name} ${(d.score * 100).toStringAsFixed(1)}%',
-        color: d.color,
+        x: bgX1 + padding,
+        y: bgY1 + padding,
+        label,
+        color: img.ColorRgb8(255, 255, 255),
       );
 
       detectedFoods.add(d.foodClass.name);
