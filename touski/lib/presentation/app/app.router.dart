@@ -53,13 +53,15 @@ class StackedRouter extends _i1.RouterBase {
     },
     _i3.TakePictureView: (data) {
       return _i5.MaterialPageRoute<dynamic>(
-        builder: (context) => _i3.TakePictureView(),
+        builder: (context) => const _i3.TakePictureView(),
         settings: data,
       );
     },
     _i4.RecipeView: (data) {
+      final args = data.getArgs<RecipeViewArguments>(nullOk: false);
       return _i5.MaterialPageRoute<dynamic>(
-        builder: (context) => _i4.RecipeView(),
+        builder: (context) =>
+            _i4.RecipeView(key: args.key, detectedFoods: args.detectedFoods),
         settings: data,
       );
     },
@@ -70,6 +72,33 @@ class StackedRouter extends _i1.RouterBase {
 
   @override
   Map<Type, _i1.StackedRouteFactory> get pagesMap => _pagesMap;
+}
+
+class RecipeViewArguments {
+  const RecipeViewArguments({
+    this.key,
+    required this.detectedFoods,
+  });
+
+  final _i5.Key? key;
+
+  final List<String> detectedFoods;
+
+  @override
+  String toString() {
+    return '{"key": "$key", "detectedFoods": "$detectedFoods"}';
+  }
+
+  @override
+  bool operator ==(covariant RecipeViewArguments other) {
+    if (identical(this, other)) return true;
+    return other.key == key && other.detectedFoods == detectedFoods;
+  }
+
+  @override
+  int get hashCode {
+    return key.hashCode ^ detectedFoods.hashCode;
+  }
 }
 
 extension NavigatorStateExtension on _i6.NavigationService {
@@ -101,14 +130,17 @@ extension NavigatorStateExtension on _i6.NavigationService {
         transition: transition);
   }
 
-  Future<dynamic> navigateToRecipeView([
+  Future<dynamic> navigateToRecipeView({
+    _i5.Key? key,
+    required List<String> detectedFoods,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
     Widget Function(BuildContext, Animation<double>, Animation<double>, Widget)?
         transition,
-  ]) async {
+  }) async {
     return navigateTo<dynamic>(Routes.recipeView,
+        arguments: RecipeViewArguments(key: key, detectedFoods: detectedFoods),
         id: routerId,
         preventDuplicates: preventDuplicates,
         parameters: parameters,
@@ -143,14 +175,17 @@ extension NavigatorStateExtension on _i6.NavigationService {
         transition: transition);
   }
 
-  Future<dynamic> replaceWithRecipeView([
+  Future<dynamic> replaceWithRecipeView({
+    _i5.Key? key,
+    required List<String> detectedFoods,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
     Widget Function(BuildContext, Animation<double>, Animation<double>, Widget)?
         transition,
-  ]) async {
+  }) async {
     return replaceWith<dynamic>(Routes.recipeView,
+        arguments: RecipeViewArguments(key: key, detectedFoods: detectedFoods),
         id: routerId,
         preventDuplicates: preventDuplicates,
         parameters: parameters,
