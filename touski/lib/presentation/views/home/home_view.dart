@@ -45,7 +45,7 @@ class HomeView extends StatelessWidget {
                 PopupMenuItem(value: Locale('en'), child: Text('English')),
               ],
             ),
-          ],
+          ]
         ),
         body: SafeArea(
           child: SingleChildScrollView(
