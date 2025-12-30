@@ -4,7 +4,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:http/http.dart' as http;
 import 'package:touski/domain/enum/error_status_code.dart';
 import 'package:touski/domain/failures/base_failure.dart';
-import 'package:touski/domain/failures/http_response_failure.dart';
 import 'package:touski/domain/failures/network_failure.dart';
 import 'package:touski/domain/failures/openai_api_failure.dart';
 import 'package:touski/generated/locale_keys.g.dart';

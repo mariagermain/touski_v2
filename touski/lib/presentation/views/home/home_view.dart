@@ -45,57 +45,61 @@ class HomeView extends StatelessWidget {
                 PopupMenuItem(value: Locale('en'), child: Text('English')),
               ],
             ),
-          ],
+          ]
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                "${LocaleKeys.home_app_desc_1.tr()}\n${LocaleKeys.home_app_desc_2.tr()}",
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyLarge,
+        body: SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    "${LocaleKeys.home_app_desc_1.tr()}\n${LocaleKeys.home_app_desc_2.tr()}",
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  Text(
+                    LocaleKeys.home_supported_foods.tr(),
+                    style: Theme.of(context).textTheme.titleMedium,
+                    textAlign: TextAlign.center,
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 8,
+                    children: supportedFoods
+                        .map(
+                          (food) => Chip(
+                            label: Text(food),
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.primaryContainer,
+                          ),
+                        )
+                        .toList(),
+                  ),
+
+                  const SizedBox(height: 60),
+
+                  ElevatedButton(
+                    onPressed: viewModel.navigateToTakePictureView,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: Text(
+                      LocaleKeys.home_start_button.tr(),
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ],
               ),
-
-              const SizedBox(height: 6),
-
-              Text(
-                LocaleKeys.home_supported_foods.tr(),
-                style: Theme.of(context).textTheme.titleMedium,
-                textAlign: TextAlign.center,
-              ),
-
-              const SizedBox(height: 8),
-
-              Wrap(
-                spacing: 12,
-                runSpacing: 8,
-                children: supportedFoods
-                    .map(
-                      (food) => Chip(
-                        label: Text(food),
-                        backgroundColor: Theme.of(
-                          context,
-                        ).colorScheme.primaryContainer,
-                      ),
-                    )
-                    .toList(),
-              ),
-
-              const SizedBox(height: 60),
-
-              ElevatedButton(
-                onPressed: viewModel.navigateToTakePictureView,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-                child: Text(
-                  LocaleKeys.home_start_button.tr(),
-                  style: const TextStyle(fontSize: 16),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
