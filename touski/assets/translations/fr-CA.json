@@ -2,6 +2,10 @@
     "app": {
       "title": "Touski"
     }, 
+    "title_web_page": {
+        "picture": "Prendre une photo",
+        "recipe": "Recette"
+    },
     "home": {
         "welcome_message": "Page d'ouverture de l'application...",
         "start_button": "Commencer",
@@ -9,12 +13,10 @@
         "app_desc_1": "Application mobile de détection d’aliments à partir d’une photo.",
         "app_desc_2": "Prenez une photo de vos ingrédients et obtenez des suggestions de recettes adaptées à ce que vous avez sous la main."
     },
-    "title_web_page": {
-        "picture": "Prendre une photo",
-        "recipe": "Recette"
-    },
     "picture":{
-      "import_button": "Importer"
+      "import_button": "Importer",
+      "retake_button": "Reprendre",
+      "recipe_button": "Recette"
     },
     "foods":{
       "apple": "pomme",
@@ -33,11 +35,16 @@
       "potato": "patate",
       "tomato": "tomate"
     },
+    "recipe": {
+      "prompt" : "Peux tu me proposer une recette en français, que je peux faire à base de ces aliments: "
+    },
     "message_failure": {
       "announcement": "Une erreur est survenue",
       "othercase": "Une erreur innattendue est survenue. Veuillez réessayer plus tard ou contacter quelqu'un si le problème survient une énième fois.",
       "http_response": "Erreur de connexion, veuillez réessayer plus tard.",
-      "network": "Réseau indisponible. Vérifiez votre connexion internet.",
-      "repository": "Une erreur inattendue est survenue lors de la requête à l'API dans le Repository."
+      "network": "'Réseau indisponible. Vérifiez votre connexion internet.'",
+      "repository": "Une erreur inattendue est survenue lors de la requête à l'API dans le Repository.",
+      "openai_billing_not_active" : "Le compte est inactif. Veuillez consulter vos paramètres de facturation sur le site web.",
+      "openai_invalid_api_key" : "Clé API incorrecte fournie. Vous pouvez trouver votre clé API sur https://platform.openai.com/account/api-keys."
     }
 }

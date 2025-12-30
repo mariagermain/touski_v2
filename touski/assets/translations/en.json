@@ -1,0 +1,50 @@
+{
+  "app": {
+    "title": "Touski"
+  },
+  "title_web_page": {
+    "picture": "Take a picture",
+    "recipe": "Recipe"
+  },
+  "home": {
+    "welcome_message": "Application launch page...",
+    "start_button": "Get started",
+    "supported_foods": "Supported foods",
+    "app_desc_1": "Mobile application for food detection from a photo.",
+    "app_desc_2": "Take a picture of your ingredients and get recipe suggestions based on what you have on hand."
+  },
+  "picture": {
+    "import_button": "Import",
+    "retake_button": "Retake",
+    "recipe_button": "Recipe"
+  },
+  "foods": {
+    "apple": "apple",
+    "banana": "banana",
+    "bellpepper": "bell pepper",
+    "carrot": "carrot",
+    "corn": "corn",
+    "cucumber": "cucumber",
+    "eggplant": "eggplant",
+    "grapes": "grapes",
+    "kiwi": "kiwi",
+    "lemon": "lemon",
+    "orange": "orange",
+    "pear": "pear",
+    "pineapple": "pineapple",
+    "potato": "potato",
+    "tomato": "tomato"
+  },
+  "recipe": {
+    "prompt": "Can you suggest a recipe in French that I can make using these ingredients: "
+  },
+  "message_failure": {
+    "announcement": "An error occurred",
+    "othercase": "An unexpected error occurred. Please try again later or contact someone if the problem happens again.",
+    "http_response": "Connection error, please try again later.",
+    "network": "Network unavailable. Please check your internet connection.",
+    "repository": "An unexpected error occurred while making the API request in the Repository.",
+    "openai_billing_not_active": "The account is inactive. Please check your billing settings on the website.",
+    "openai_invalid_api_key": "Incorrect API key provided. You can find your API key at https://platform.openai.com/account/api-keys."
+  }
+}

@@ -14,10 +14,9 @@ Future<void> main() async {
   await EasyLocalization.ensureInitialized();
   cameras = await availableCameras();
 
-
   runApp(
     EasyLocalization(
-      supportedLocales: const [Locale('fr', 'CA')],
+      supportedLocales: const [Locale('fr', 'CA'), Locale('en')],
       path: 'assets/translations',
       fallbackLocale: const Locale('fr', 'CA'),
       child: const MainApp()

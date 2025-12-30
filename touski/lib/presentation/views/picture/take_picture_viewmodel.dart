@@ -23,6 +23,7 @@ class TakePictureViewModel extends BaseViewModel{
   Uint8List? get image => _image != null ? Uint8List.fromList(img.encodeJpg(_image!)) : null;
   
   Future<void> importPicture() async {
+    setBusy(true);
     final XFile? picked = await _picker.pickImage(
       source: ImageSource.gallery,
       imageQuality: 85,
@@ -34,14 +35,17 @@ class TakePictureViewModel extends BaseViewModel{
     _image = img.decodeImage(bytes);
 
     await processImage();
+    setBusy(false);
     notifyListeners();
   }
 
   Future<void> setTakenPicture(XFile imageFile) async {
+    setBusy(true);
     final bytes = await imageFile.readAsBytes();
     _image = img.decodeImage(bytes);
 
     await processImage();
+    setBusy(false);
     notifyListeners();
   }
 
@@ -55,12 +59,14 @@ class TakePictureViewModel extends BaseViewModel{
     notifyListeners();
   }
 
-  void navigateToRecipeView(){
-    _navigationService.navigateTo(Routes.recipeView);
-  }
-
   void retakePicture(){
     _image = null;
     notifyListeners();
+  }
+
+  void navigateToRecipeView(){
+    _navigationService.navigateToRecipeView(
+      detectedFoods: detectedFoods!
+    );
   }
 }

@@ -5,34 +5,47 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:touski/generated/locale_keys.g.dart';
 
 class HomeView extends StatelessWidget {
-  const HomeView({super.key});
-
-  static final supportedFoods = [
-    '🍎 ${LocaleKeys.foods_apple.tr()}',
-    '🍌 ${LocaleKeys.foods_banana.tr()}',
-    '🫑 ${LocaleKeys.foods_bellpepper.tr()}',
-    '🥕 ${LocaleKeys.foods_carrot.tr()}',
-    '🌽 ${LocaleKeys.foods_corn.tr()}',
-    '🥒 ${LocaleKeys.foods_cucumber.tr()}',
-    '🍆 ${LocaleKeys.foods_eggplant.tr()}',
-    '🍇 ${LocaleKeys.foods_grapes.tr()}',
-    '🥝 ${LocaleKeys.foods_kiwi.tr()}',
-    '🍋 ${LocaleKeys.foods_lemon.tr()}',
-    '🍊 ${LocaleKeys.foods_orange.tr()}',
-    '🍐 ${LocaleKeys.foods_pear.tr()}',
-    '🍍 ${LocaleKeys.foods_pineapple.tr()}',
-    '🥔 ${LocaleKeys.foods_potato.tr()}',
-    '🍅 ${LocaleKeys.foods_tomato.tr()}',
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final supportedFoods = [
+      '🍎 ${LocaleKeys.foods_apple.tr()}',
+      '🍌 ${LocaleKeys.foods_banana.tr()}',
+      '🫑 ${LocaleKeys.foods_bellpepper.tr()}',
+      '🥕 ${LocaleKeys.foods_carrot.tr()}',
+      '🌽 ${LocaleKeys.foods_corn.tr()}',
+      '🥒 ${LocaleKeys.foods_cucumber.tr()}',
+      '🍆 ${LocaleKeys.foods_eggplant.tr()}',
+      '🍇 ${LocaleKeys.foods_grapes.tr()}',
+      '🥝 ${LocaleKeys.foods_kiwi.tr()}',
+      '🍋 ${LocaleKeys.foods_lemon.tr()}',
+      '🍊 ${LocaleKeys.foods_orange.tr()}',
+      '🍐 ${LocaleKeys.foods_pear.tr()}',
+      '🍍 ${LocaleKeys.foods_pineapple.tr()}',
+      '🥔 ${LocaleKeys.foods_potato.tr()}',
+      '🍅 ${LocaleKeys.foods_tomato.tr()}',
+    ];
+
     return ViewModelBuilder<HomeViewModel>.reactive(
       viewModelBuilder: () => HomeViewModel(),
       builder: (context, viewModel, child) => Scaffold(
         appBar: AppBar(
           title: Text(LocaleKeys.app_title.tr()),
           centerTitle: true,
+          actions: [
+            PopupMenuButton<Locale>(
+              icon: const Icon(Icons.translate),
+              onSelected: (locale) {
+                context.setLocale(locale);
+              },
+              itemBuilder: (context) => const [
+                PopupMenuItem(
+                  value: Locale('fr', 'CA'),
+                  child: Text('Français CA'),
+                ),
+                PopupMenuItem(value: Locale('en'), child: Text('English')),
+              ],
+            ),
+          ],
         ),
         body: Padding(
           padding: const EdgeInsets.all(20),
@@ -62,15 +75,16 @@ class HomeView extends StatelessWidget {
                     .map(
                       (food) => Chip(
                         label: Text(food),
-                        backgroundColor:
-                            Theme.of(context).colorScheme.primaryContainer,
+                        backgroundColor: Theme.of(
+                          context,
+                        ).colorScheme.primaryContainer,
                       ),
                     )
                     .toList(),
               ),
 
               const SizedBox(height: 60),
-              
+
               ElevatedButton(
                 onPressed: viewModel.navigateToTakePictureView,
                 style: ElevatedButton.styleFrom(
