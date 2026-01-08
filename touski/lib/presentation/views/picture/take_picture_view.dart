@@ -20,14 +20,18 @@ class _TakePictureViewState extends State<TakePictureView> {
   @override
   void initState() {
     super.initState();
+    _initCamera = _initCameraAsync();
+  }
+
+  Future<void> _initCameraAsync() async {
     _controller = CameraController(
       cameras.first,
       ResolutionPreset.medium,
       imageFormatGroup: ImageFormatGroup.yuv420,
     );
-    _initCamera = _controller.initialize();
+    await _controller.initialize();
   }
-
+  
   @override
   Widget build(BuildContext context) {
     return ViewModelBuilder<TakePictureViewModel>.reactive(
