@@ -16,6 +16,7 @@ class TakePictureView extends StatefulWidget {
 class _TakePictureViewState extends State<TakePictureView> {
   late CameraController _controller;
   late Future<void> _initCamera;
+  int _cameraIndex = 0;
 
   @override
   void initState() {
@@ -30,6 +31,21 @@ class _TakePictureViewState extends State<TakePictureView> {
       imageFormatGroup: ImageFormatGroup.yuv420,
     );
     await _controller.initialize();
+  }
+  
+  Future<void> _switchCamera() async {
+    _cameraIndex = (_cameraIndex + 1) % cameras.length;
+
+    await _controller.dispose();
+
+    _controller = CameraController(
+      cameras[_cameraIndex],
+      ResolutionPreset.medium,
+      imageFormatGroup: ImageFormatGroup.yuv420,
+    );
+  
+    _initCamera = _controller.initialize();
+    setState(() {});
   }
   
   @override
@@ -85,6 +101,15 @@ class _TakePictureViewState extends State<TakePictureView> {
                               child: Stack(
                                 alignment: Alignment.center,
                                 children: [
+                                  Positioned(
+                                    left: 8,
+                                    child: IconButton(
+                                      icon: const Icon(Icons.cameraswitch),
+                                      color: Colors.grey.shade700,
+                                      iconSize: 36,
+                                      onPressed: _switchCamera,
+                                    ),
+                                  ),
                                   GestureDetector(
                                     onTap: () async {
                                       final image = await _controller
