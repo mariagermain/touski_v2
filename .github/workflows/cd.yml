@@ -1,12 +1,10 @@
 name: CD
 on:
   push:
-    branches:
-      - main
-      - develop
-
+    tags:
+      - "release-*"
 jobs:
-  build-ios:
+  build_ios:
     runs-on: macos-latest
 
     steps:
@@ -19,22 +17,15 @@ jobs:
       - run: flutter pub get
         working-directory: ./touski
 
-      # Build iOS (no codesign)
-      - run: flutter build ios --release --no-codesign
+      - run: flutter build ipa --release --no-codesign
         working-directory: ./touski
 
-      # Archive to .ipa (manual step with xcodebuild)
-      - run: |
-          cd touski/ios
-          xcodebuild -workspace Runner.xcworkspace \
-                     -scheme Runner \
-                     -configuration Release \
-                     -archivePath build/Runner.xcarchive archive
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: touski-ios
+          path: touski/build/ios/ipa/*.ipa
 
-          xcodebuild -exportArchive \
-                     -archivePath build/Runner.xcarchive \
-                     -exportOptionsPlist ExportOptions.plist \
-                     -exportPath build/ipa
   build_apk:
     runs-on: ubuntu-latest
     steps:
@@ -52,10 +43,12 @@ jobs:
       - run: flutter pub get
         working-directory: ./touski 
 
-      - run: flutter build apk --target lib/presentation/main.dart 
+      - run: flutter build apk --target lib/main.dart 
         working-directory: ./touski
 
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          files: touski/build/app/outputs/flutter-apk/app-release.apk
+          name: touski-android
+          files: |
+            touski/build/app/outputs/flutter-apk/app-release.apk
